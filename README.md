@@ -1,6 +1,6 @@
 # calculator
 
-## preview
+## Design
 <div style = "display: flex; flex-direction: column; align-items: center;">
     <div>
     <img src = "images/design.png" width = 190 style = "border: lightblue 1px solid;">
