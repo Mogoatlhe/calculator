@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins&family=Sarabun&display=swap');
 
 html {
+    
     box-sizing: border-box;
     font-family: 'Sarabun', sans-serif;
 }
@@ -10,6 +11,8 @@ html {
 }
 
 body{
+    --cursor-color: #a2c0f1;
+    --screen-color: #33383f;
     margin: 0;
     padding: 0;
 }
@@ -52,8 +55,8 @@ body{
 }
 
 .dot{
-    height: 2px;
-    width: 2px;
+    height: 2.5px;
+    width: 2.5px;
     border-radius: 50%;
     background-color: #c4c7c5;
     cursor: pointer;
@@ -77,16 +80,21 @@ body{
 }
 
 #values-display{
-    height: 100px;
+    height: 80px;
     text-align: right;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    font-size: 3rem;
 }
 
 #values-display::after{
     content: "";
-    height: 100px;
-    width: 2px;
+    height: 80px;
+    width: 2.5px;
     display: inline-block;
-    background-color: #a2c0f1;
+    background-color: var(--cursor-color);
     animation: cursor-blink 1.2s steps(2) infinite;
 }
 
@@ -135,6 +143,11 @@ body{
 
 button{
     font-family: 'Sarabun', sans-serif;
+    cursor: pointer;
+}
+
+button:hover{
+    opacity: 0.8;
 }
 
 #more-buttons-toggle{
@@ -181,7 +194,7 @@ button{
     text-align: center;
 }
 
-.operands{
+.operand{
     color: white;
     background-color: #282a2d;
 }
@@ -190,7 +203,7 @@ button{
     background-color: #c4eed0;
 }
 
-.operators{
+.operator{
     background-color: #5ab3f0;
 }
 
