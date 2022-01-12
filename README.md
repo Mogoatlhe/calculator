@@ -12,10 +12,10 @@ Calculator functionality implemented in JavaScript as part of [The Odin Project]
   + `42`
 - [x] Avoid numbers from overflowing the screen, for me this only applies to answer. The chained operations can overflow because the design inspiration is from my phone's calculator and my phone's calculator has chained operations #overflowing.
 - [x] Pressing "Clear" / "AC" should reset all the data allowing the user to start afresh.
-- [x] Display a snarky message when division by 0 is attempted
-- [x] Allow calculations on floating point numbers, and prevent users from entering numbers such as `12.3.56.5.`
+- [ ] Display a snarky message when division by 0 is attempted
+- [ ] Allow calculations on floating point numbers, and prevent users from entering numbers such as `12.3.56.5.`
   + Disable `.` if it already exists on current operand
-- [] Add a backspace button for the user to undo if they click the wrong number.
+- [x] Add a backspace button for the user to undo if they click the wrong number.
 - [] Add keyboard support
 
 ## Design

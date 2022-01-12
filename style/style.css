@@ -222,3 +222,10 @@ button:hover{
 #equals{
     background-color: #d3e3fd;
 }
+
+#backspace{
+    display: flex;
+    flex-shrink: 2;
+    justify-content: center;
+    padding-top: 14px;
+}

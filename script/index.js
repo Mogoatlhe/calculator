@@ -1,18 +1,81 @@
 
 let prevLeft = "";
 let operator = "";
+let pressedId = "";
 let leftOperand = "";
+let inputString = "";
 let rightOperand = "";
 let pressedValue = "";
-let pressedId = "";
 
+const dot = document.getElementById("dot");
 const clear = document.getElementById("ac");
 const answer = document.getElementById("answer");
 const screen = document.getElementById("values-display");
 const operands = document.getElementsByClassName("operand");
 const operators = document.getElementsByClassName("operator");
-const dot = document.getElementById("dot");
 screen.textContent = "";
+
+
+placeDotInOperand = (operand) => {
+
+    if(operand.length > 0){
+        inputString = inputString.replace(new RegExp(`${operand}$`, "g"), "");
+    }
+    
+    if(operand.includes(".")){
+        answer.textContent = ". already added!";
+        answer.classList.add("error");
+    }else if(operand === ""){
+        operand = "0.";
+    }else{
+        operand += ".";
+    }
+
+    inputString += operand;
+    screen.textContent = inputString;
+
+    return operand;
+}
+
+dot.addEventListener("click", () => {
+
+    if(operator !== ""){
+        rightOperand = placeDotInOperand(rightOperand);
+    }else{
+        leftOperand = placeDotInOperand(leftOperand);
+    }
+
+});
+
+backspace = () => {
+
+    let screenText = screen.textContent;
+    let lastInputChar = screenText[screenText.length - 1];
+
+    if(screenText === ""){
+        return;
+    }
+
+    if(lastInputChar === operator){
+        operator = "";
+        lastInputChar = "\\" + lastInputChar;
+    }else if(leftOperand !== "" && screenText.match(new RegExp(`(${leftOperand})$`)) != null){
+        leftOperand = leftOperand.replace(new RegExp(`(${lastInputChar})$`), "");
+    }else if(rightOperand !== "" && screenText.match(new RegExp(`(${rightOperand})$`)) != null){
+        leftOperand = answer.textContent !== "" ? prevLeft : leftOperand;
+        rightOperand = rightOperand.replace(new RegExp(`(${lastInputChar})$`), "");
+
+        if(rightOperand === "" || (rightOperand.match(/\.$/g) != null)){
+            answer.textContent = "";
+        }else{
+            answer.textContent = operate(operator, Number(prevLeft), Number(rightOperand));
+        }
+    }
+    
+    screen.textContent = screenText.replace(new RegExp(`(${lastInputChar})$`), "");
+    console.log(screen.textContent);
+
+};
 
 resetData = (body, id) => {
     let cursorColor = getComputedStyle(body).getPropertyValue("--cursor-color");
@@ -28,12 +91,12 @@ resetData = (body, id) => {
 
         rightOperand = "";
         operator = "";
+        answer.classList.remove("error");
     }
 }
 
 setValues = element => {
 
-    let inputString = "";
     const body = document.querySelector("body");
     const acceptableFirstOperators = ["√", "π", "-"];
     
@@ -50,6 +113,11 @@ setValues = element => {
         if(inputString.length > 8){ // blink
             answer.classList.add("error");
             answer.textContent = "too long"
+            return;
+        }
+
+        if(pressedId === "backspace"){
+            backspace();
             return;
         }
         
@@ -119,6 +187,11 @@ setValues = element => {
             operator = pressedValue;
             inputString += operator;
         }else if(operator !== "" && pressedId === "equals"){
+
+            if(prevLeft === "" || rightOperand === ""){
+                return;
+            }
+
             answer.textContent = operate(operator, Number(prevLeft), Number(rightOperand));
 
             if(isNaN(answer.textContent)){
@@ -133,14 +206,7 @@ setValues = element => {
     });
     
     clear.addEventListener("click", () => {
-        
         resetData(body, clear.getAttribute("id"));
-
-        // if(inputString.length > 0){
-        //     let lastCharacter = inputString[inputString.length - 1];
-        //     inputString = inputString.replace(new RegExp(`(${lastCharacter})$`, "g"), "");
-        //     screen.textContent = inputString;
-        // }
     });
 }
 
@@ -176,6 +242,13 @@ const operate = (operator, leftOperand, rightOperand) => {
     
     if(!isNaN(answer) && !Number.isInteger(answer)){
         answer = Number.parseFloat(answer).toFixed(2);
+        let lastAnswerChar = answer[answer.length - 1];
+        let isTrailing = lastAnswerChar == 0 && answer.includes(".");
+        isTrailing = isTrailing || lastAnswerChar == ".";
+
+        while(isTrailing){
+            answer = answer.replace(/(0|\.)$/, "");
+        }
     }
 
     return answer;
