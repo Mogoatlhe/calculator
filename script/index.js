@@ -53,7 +53,7 @@ reassignOperands = (screenText) => {
         return;
     }
 
-    let allOperators = screenText.replace(/[\d]*/g, "");
+    let allOperators = screenText.replace(/([\d]|\.)*/g, "");
     let operatorCount = allOperators.length;
     let currOperator = allOperators.slice(0, 1);
     let currOperatorPos = screenText.indexOf(currOperator); 
@@ -72,7 +72,7 @@ reassignOperands = (screenText) => {
         newScreenText = newScreenText.slice(currOperatorPos + 1);
     }
 
-    if(leftOperand !== screenText[0]){
+    if(operatorCount !== 1){
         answer.textContent = leftOperand;
     }
 }
@@ -123,6 +123,22 @@ resetData = (body, id) => {
     }
 }
 
+preventLeadingIntegerZeros = (operand) => {
+
+    if(operand.length !== 2){
+        return operand;
+    }
+
+    const prev = operand[0];
+    const curr = operand[1];
+
+    if(isNaN(curr) || prev !== "0"){
+        return operand;
+    }
+
+    return operand.slice(1);
+}
+
 handleDigitInput = (tempInputStr) => {
     
     if(operator !== ""){
@@ -136,12 +152,13 @@ handleDigitInput = (tempInputStr) => {
             
             prevLeft = leftOperand;
             rightOperand = pressedValue;
+            rightOperand = preventLeadingIntegerZeros(rightOperand);
             answer.textContent = operate(operator, leftOperand, rightOperand);
         }else{
             rightOperand += pressedValue;
+            rightOperand = preventLeadingIntegerZeros(rightOperand);
             answer.textContent = operate(operator, prevLeft, rightOperand);
         }
-        
         
         // if divide by 0, a string is returned
         // avoid assigning a NaN to leftOperand
@@ -153,6 +170,7 @@ handleDigitInput = (tempInputStr) => {
     }else{
         inputString = inputString.replace(new RegExp(`${leftOperand}$`, "g"), "");
         leftOperand += pressedValue;
+        leftOperand = preventLeadingIntegerZeros(leftOperand);
         inputString += leftOperand;
     }
     
@@ -160,25 +178,65 @@ handleDigitInput = (tempInputStr) => {
     screen.textContent = inputString;
 }
 
-manageScreen = element => {
+isAllowedFirstOperator = (value) => {
+
+    const acceptableFirstOperators = ["√", "π", "-"];
+    return acceptableFirstOperators.some(operator => (operator === value) ? true : false);
+}
+
+handleOperandInput = (body) => {
+
+    let screenColor = getComputedStyle(body).getPropertyValue("--screen-color");
+
+    let previousPressed = inputString[inputString.length - 1];
+    let isOperatorAcceptable = isAllowedFirstOperator(pressedValue);
+    let isPreviousAcceptable = isAllowedFirstOperator(previousPressed);
+    
+    if(isOperatorAcceptable && inputString.length === 0){
+        inputString = inputString.replace(new RegExp(`${leftOperand}$`, "g"), "");
+        leftOperand += pressedValue
+        inputString += leftOperand;
+    }else if (isPreviousAcceptable && rightOperand === ""){
+        rightOperand += pressedValue;
+        inputString += rightOperand;
+    }else if (pressedValue !== "=" && !isOperatorAcceptable || pressedValue === "-"){
+        
+        if(isNaN(previousPressed)){
+            inputString = inputString.replace(operator, "");
+        }else if(previousPressed === "0" && operator === "÷"){
+            inputString = inputString.replace(/(÷0)$/, "");
+            answer.textContent = "";
+        }
+        
+        operator = pressedValue;
+        inputString += operator;
+    }else if(operator !== "" && pressedValue === "="){
+        
+        if(prevLeft === "" || rightOperand === ""){
+            return;
+        }
+        
+        answer.textContent = operate(operator, prevLeft, rightOperand);
+        
+        if(isNaN(answer.textContent)){
+            answer.classList.add("error");
+            return;
+        }
+        
+        inputString = leftOperand = answer.textContent;
+        body.style.setProperty("--cursor-color", screenColor);
+    }
+    screen.textContent = inputString;
+}
+
+addClickEvents = element => {
     
     const body = document.querySelector("body");
-    const acceptableFirstOperators = ["√", "π", "-"];
-
-    const input = {
-        leftOperand: "",
-        rightOperand: "",
-        operator: "",
-        prevLeft: "",
-        inputString: "",
-        pressedValue: "",
-    }
     
     element.addEventListener("click", (e) => {
         
         let tempInputStr = "";
         let allowedEvents = ["+", "-", "*", "/", ".", "="];
-        let screenColor = getComputedStyle(body).getPropertyValue("--screen-color");
         inputString = tempInputStr = screen.textContent;
         pressedValue = element.textContent;
         const isBackSpace = pressedValue === "Backspace" || pressedValue === "⌫";
@@ -188,6 +246,8 @@ manageScreen = element => {
             answer.textContent = "too long"
             return;
         }
+        
+        answer.classList.remove("error");
         
         if(isBackSpace){
             backspace();
@@ -202,8 +262,6 @@ manageScreen = element => {
             return;
         }
         
-        answer.classList.remove("error");
-        
         resetData(body);
 
         if(!isNaN(pressedValue)){
@@ -211,47 +269,8 @@ manageScreen = element => {
             return;
         }
         
-        let isOperatorAcceptable = acceptableFirstOperators
-        .some(operator => (operator === pressedValue) ? true : false);
-        let previousPressed = inputString[inputString.length - 1];
-        let isPreviousAcceptable = acceptableFirstOperators
-        .some(operator => (operator === previousPressed) ? true : false);
+        handleOperandInput(body);
         
-        if(isOperatorAcceptable && inputString.length === 0){
-            inputString = inputString.replace(new RegExp(`${leftOperand}$`, "g"), "");
-            leftOperand += pressedValue
-            inputString += leftOperand;
-        }else if (isPreviousAcceptable && rightOperand === ""){
-            rightOperand += pressedValue;
-            inputString += rightOperand;
-        }else if (pressedValue !== "=" && !isOperatorAcceptable || pressedValue === "-"){
-            
-            if(isNaN(previousPressed)){
-                inputString = inputString.replace(operator, "");
-            }else if(previousPressed === "0" && operator === "÷"){
-                inputString = inputString.replace(/(÷0)$/, "");
-                answer.textContent = "";
-            }
-            
-            operator = pressedValue;
-            inputString += operator;
-        }else if(operator !== "" && pressedValue === "="){
-            
-            if(prevLeft === "" || rightOperand === ""){
-                return;
-            }
-            
-            answer.textContent = operate(operator, prevLeft, rightOperand);
-            
-            if(isNaN(answer.textContent)){
-                answer.classList.add("error");
-                return;
-            }
-            
-            inputString = leftOperand = answer.textContent;
-            body.style.setProperty("--cursor-color", screenColor);
-        }
-        screen.textContent = inputString;
     });
 
     clear.addEventListener("click", () => {
@@ -259,10 +278,6 @@ manageScreen = element => {
     });
 }
 
-[...operands].map(manageScreen);
-[...operators].map(manageScreen);
-
-// basic operations
 const add = (leftOperand, rightOperand) => leftOperand + rightOperand;
 const subtract = (leftOperand, rightOperand) => leftOperand - rightOperand;
 const multiply = (leftOperand, rightOperand) => leftOperand * rightOperand;
@@ -305,3 +320,6 @@ const operate = (operator, leftOperand, rightOperand) => {
     return answer;
 
 }
+
+[...operands].map(addClickEvents);
+[...operators].map(addClickEvents);
