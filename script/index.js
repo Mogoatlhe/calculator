@@ -173,7 +173,7 @@ handleInput = (pressed) => {
         return;
     }
 
-    if(inputString.length > 8 && !isBackSpace){ 
+    if(inputString.length > 8 && (!isBackSpace || pressedValue !== "=")){ 
         answer.classList.add("error");
         answer.textContent = "too long"
         return;
@@ -296,13 +296,13 @@ handleOperandInput = (body) => {
 
 addClickEvents = element => {
     
-    element.addEventListener("click", (e) => {
+    element.addEventListener("mousedown", (e) => {
         
         handleInput(element.textContent);
         
     });
 
-    clear.addEventListener("click", () => {
+    clear.addEventListener("mousedown", (e) => {
         resetData(body, clear.getAttribute("id"));
     });
 }
