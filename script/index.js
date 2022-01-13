@@ -6,17 +6,15 @@ let inputString = "";
 let rightOperand = "";
 let pressedValue = "";
 
-// let allowedEvents = ["+", "-", "*", "/", ".", "="];
-const allowedOperators = ["+", "-", "*", "/"];
+const allowedOperators = ["+", "-", "x", "/"];
 const dot = document.getElementById("dot");
 const clear = document.getElementById("ac");
+const body = document.querySelector("body");
 const answer = document.getElementById("answer");
 const screen = document.getElementById("values-display");
 const operands = document.getElementsByClassName("operand");
 const operators = document.getElementsByClassName("operator");
 screen.textContent = "";
-
-
 
 placeDotInOperand = (operand) => {
     
@@ -72,8 +70,10 @@ reassignOperands = (screenText) => {
         newScreenText = newScreenText.slice(currOperatorPos + 1);
     }
 
-    if(operatorCount !== 1){
+    if(rightOperand !== ""){
         answer.textContent = leftOperand;
+    }else{
+        operator = "";
     }
 }
 
@@ -137,6 +137,71 @@ preventLeadingIntegerZeros = (operand) => {
     }
 
     return operand.slice(1);
+}
+
+assignPressedValue = (pressed) => {
+
+    if(pressed === "*"){
+        pressedValue = "x"
+    }else if (pressed === "/"){
+        pressedValue = "÷"
+    }else if (pressed === "Enter"){
+        pressedValue = "=";
+    }else{
+        pressedValue = pressed;
+    }
+
+}
+
+handleInput = (pressed) => {
+
+    let tempInputStr = "";
+    let allowedEvents = ["+", "-", "*", "/", ".", "=", "Enter", "x"];
+    inputString = tempInputStr = screen.textContent;
+
+    assignPressedValue(pressed);
+
+    leftOperand = leftOperand.toString();
+    rightOperand = rightOperand.toString();
+
+    const isBackSpace = pressedValue === "Backspace" || pressedValue === "⌫";
+    let isAllowedInput = isBackSpace || !isNaN(pressedValue);
+
+    isAllowedInput = isAllowedInput || allowedEvents.some(curr => (curr === pressed) ? true : false);
+
+    if(!isAllowedInput){
+        return;
+    }
+
+    if(inputString.length > 8 && !isBackSpace){ 
+        answer.classList.add("error");
+        answer.textContent = "too long"
+        return;
+    }
+    
+    answer.classList.remove("error");
+    
+    if(isBackSpace){
+        backspace();
+        return;
+    }else if(pressedValue === "."){
+        if(operator !== ""){
+            rightOperand = placeDotInOperand(rightOperand);
+        }else{
+            leftOperand = placeDotInOperand(leftOperand);
+        }
+
+        return;
+    }
+    
+    resetData(body);
+
+    if(!isNaN(pressedValue)){
+        handleDigitInput(tempInputStr);
+        return;
+    }
+    
+    handleOperandInput(body);
 }
 
 handleDigitInput = (tempInputStr) => {
@@ -231,45 +296,9 @@ handleOperandInput = (body) => {
 
 addClickEvents = element => {
     
-    const body = document.querySelector("body");
-    
     element.addEventListener("click", (e) => {
         
-        let tempInputStr = "";
-        let allowedEvents = ["+", "-", "*", "/", ".", "="];
-        inputString = tempInputStr = screen.textContent;
-        pressedValue = element.textContent;
-        const isBackSpace = pressedValue === "Backspace" || pressedValue === "⌫";
-        
-        if(inputString.length > 8 && !isBackSpace){ 
-            answer.classList.add("error");
-            answer.textContent = "too long"
-            return;
-        }
-        
-        answer.classList.remove("error");
-        
-        if(isBackSpace){
-            backspace();
-            return;
-        }else if(pressedValue === "."){
-            if(operator !== ""){
-                rightOperand = placeDotInOperand(rightOperand);
-            }else{
-                leftOperand = placeDotInOperand(leftOperand);
-            }
-
-            return;
-        }
-        
-        resetData(body);
-
-        if(!isNaN(pressedValue)){
-            handleDigitInput(tempInputStr);
-            return;
-        }
-        
-        handleOperandInput(body);
+        handleInput(element.textContent);
         
     });
 
@@ -308,7 +337,7 @@ const operate = (operator, leftOperand, rightOperand) => {
     }
     
     if(!isNaN(answer) && !Number.isInteger(answer)){
-        answer = Number.parseFloat(answer).toFixed(2);
+        answer = Number.parseFloat(answer).toFixed(8);
         let lastAnswerChar = answer[answer.length - 1];
 
         while(lastAnswerChar == 0 && answer.includes("." || lastAnswerChar == ".") ){
@@ -323,3 +352,6 @@ const operate = (operator, leftOperand, rightOperand) => {
 
 [...operands].map(addClickEvents);
 [...operators].map(addClickEvents);
+
+
+document.addEventListener('keydown', e => handleInput(e.key));
