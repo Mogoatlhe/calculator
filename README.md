@@ -16,7 +16,7 @@ Calculator functionality implemented in JavaScript as part of [The Odin Project]
 - [ ] Allow calculations on floating point numbers, and prevent users from entering numbers such as `12.3.56.5.`
   + Disable `.` if it already exists on current operand
 - [x] Add a backspace button for the user to undo if they click the wrong number.
-- [] Add keyboard support
+- [x] Add keyboard support
 
 ## Design
 <div style = "display: flex; flex-direction: column; align-items: center;">
