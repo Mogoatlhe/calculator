@@ -156,7 +156,7 @@ assignPressedValue = (pressed) => {
 handleInput = (pressed) => {
 
     let tempInputStr = "";
-    let allowedEvents = ["+", "-", "*", "/", ".", "=", "Enter", "x"];
+    let allowedEvents = ["+", "-", "*", "/", ".", "=", "Enter", "x", "÷"];
     inputString = tempInputStr = screen.textContent;
 
     assignPressedValue(pressed);
